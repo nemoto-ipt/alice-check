@@ -52,12 +52,24 @@ export default class HtmlDataExtractor {
             const selector = typeof config === 'string' ? config : config.selector;
             const type = typeof config === 'string' ? 'text' : (config.type || 'text');
 
-            const element = $(selector).first();
-            
             // typeに応じて取得方法を変更
             if (type === 'value') {
+                const element = $(selector).first();
                 result[key] = element.val() || element.attr('value') || '';
+            } else if (type === 'timeRange') {
+                // 時間指定：複数のセレクタから値を取得して範囲形式にする
+                const startElement = $(selector[0]).first();
+                const endElement = $(selector[1]).first();
+                const startValue = startElement.val() || '';
+                const endValue = endElement.val() || '';
+                
+                if (startValue && endValue) {
+                    result[key] = `${startValue}:00~${endValue}:00`;
+                } else {
+                    result[key] = '';
+                }
             } else {
+                const element = $(selector).first();
                 result[key] = element.text().replace(/\s+/g, ' ').trim();
             }
         });
@@ -66,16 +78,6 @@ export default class HtmlDataExtractor {
     }
 
     displayResults() {
-        console.log('\n' + '★'.repeat(25));
-        console.log(`  データ抽出レポート (${this.results.length}件)`);
-        console.log('★'.repeat(25) + '\n');
-
-        this.results.forEach((item) => {
-            console.log(`■ ファイル名: ${item.fileName}`);
-            Object.keys(this.config).forEach(key => {
-                console.log(`  └ ${key}: ${item[key]}`);
-            });
-            console.log('');
-        });
+        console.log(JSON.stringify(this.results, null, 2));
     }
 }
