@@ -2,21 +2,24 @@ import fs from 'fs';
 import path from 'path';
 
 export default class ExcelDataExtractor {
-    constructor(excelTemplateFile, dataFile) {
+    constructor(headerFile, dataFile) {
         const __dirname = path.dirname(new URL(import.meta.url).pathname);
-        this.excelTemplatePath = path.join(process.platform === 'win32' ? __dirname.substring(1) : __dirname, excelTemplateFile);
+        this.headerFilePath = path.join(process.platform === 'win32' ? __dirname.substring(1) : __dirname, headerFile);
         this.dataFilePath = path.join(process.platform === 'win32' ? __dirname.substring(1) : __dirname, dataFile);
         
-        this.excelTemplate = JSON.parse(fs.readFileSync(this.excelTemplatePath, 'utf8'));
         this.results = [];
         this.init();
     }
 
     init() {
-        const content = fs.readFileSync(this.dataFilePath, 'utf8');
-        const lines = content.trim().split('\n');
+        // ヘッダーを取得
+        const headerContent = fs.readFileSync(this.headerFilePath, 'utf8');
+        const headerLine = headerContent.trim();
+        const keys = headerLine.split('\t').map(key => key.replace(/"/g, ''));
 
-        const keys = Object.keys(this.excelTemplate);
+        // データを読込
+        const dataContent = fs.readFileSync(this.dataFilePath, 'utf8');
+        const lines = dataContent.trim().split('\n');
 
         lines.forEach(line => {
             const values = line.split('\t');
@@ -39,3 +42,4 @@ export default class ExcelDataExtractor {
         console.log(JSON.stringify(this.results, null, 2));
     }
 }
+
