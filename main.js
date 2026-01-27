@@ -50,9 +50,16 @@ export default class HtmlDataExtractor {
             const config = this.config[key];
             // 文字列の場合は直接セレクタ、オブジェクトの場合はselectorプロパティを使用
             const selector = typeof config === 'string' ? config : config.selector;
+            const type = typeof config === 'string' ? 'text' : (config.type || 'text');
 
-            // selector を直接指定（class/cssセレクタ両対応）
-            result[key] = $(selector).first().text().replace(/\s+/g, ' ').trim();
+            const element = $(selector).first();
+            
+            // typeに応じて取得方法を変更
+            if (type === 'value') {
+                result[key] = element.val() || element.attr('value') || '';
+            } else {
+                result[key] = element.text().replace(/\s+/g, ' ').trim();
+            }
         });
 
         return result;
