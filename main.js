@@ -74,10 +74,73 @@ export default class HtmlDataExtractor {
             }
         });
 
+        // 注文日時を注文日と注文時間に分割
+        if (result['注文日時']) {
+            const parts = result['注文日時'].split(' ');
+            if (parts.length >= 2) {
+                result['注文日'] = parts[0];
+                result['注文時間'] = parts[1];
+            } else {
+                result['注文日'] = parts[0] || '';
+                result['注文時間'] = '';
+            }
+            delete result['注文日時'];
+        }
+
+        // 金額から「円」を削除
+        if (result['金額']) {
+            result['金額'] = result['金額'].replace(/円/g, '').trim();
+        }
+        
+        // クーポン利用から「円」を削除、マイナス記号を▲に置き換え
+        if (result['クーポン利用']) {
+            result['クーポン利用'] = result['クーポン利用']
+                .replace(/円/g, '')
+                .replace(/-/g, '▲')
+                .trim();
+        }
+        
+        // 合計金額から「円」を削除
+        if (result['合計金額']) {
+            result['合計金額'] = result['合計金額'].replace(/円/g, '').trim();
+        }
+        
+        // 日付から時間を削除（日付部分のみを抽出）
+        const dateFields = ['支払完了日', '注文確定日', '依頼日　　　(情報工房⇒ｼﾝｶﾞﾎﾟｰﾙﾌｧｯｼｮﾝ)'];
+        dateFields.forEach(field => {
+            if (result[field]) {
+                const datePart = result[field].split(' ')[0];
+                result[field] = datePart;
+            }
+        });
+
+        // 置き配指定から「置き配場所：」を削除
+        if (result['置き配指定']) {
+            result['置き配指定'] = result['置き配指定'].replace(/置き配場所[：:]/g, '').trim();
+        }
+
+        // 送付先住所から郵便番号を抽出して削除
+        if (result['送付先住所']) {
+            const addressText = result['送付先住所'];
+            const zipMatch = addressText.match(/〒?([\d\-]+)/);
+            
+            if (zipMatch) {
+                // 郵便番号を抽出（〒記号は除外）
+                result['郵便番号'] = zipMatch[1];
+                // 送付先住所から郵便番号を削除
+                result['送付先住所'] = addressText.replace(/〒?[\d\-]+\s*/g, '').trim();
+            }
+        }
+
         return result;
     }
 
     displayResults() {
-        console.log(JSON.stringify(this.results, null, 2));
+        // fileNameを除外して出力
+        const resultsWithoutFileName = this.results.map(item => {
+            const { fileName, ...rest } = item;
+            return rest;
+        });
+        console.log(JSON.stringify(resultsWithoutFileName, null, 2));
     }
 }
