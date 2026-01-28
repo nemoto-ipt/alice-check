@@ -30,6 +30,7 @@ export default class Checker {
         this.excelData = Array.isArray(data) ? data : [data];
     }
 
+    // todo ここ直す
     compare() {
         const rows = [];
         const usedExcelIndexes = new Set();
