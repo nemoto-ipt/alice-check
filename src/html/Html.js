@@ -52,55 +52,10 @@ export default class HtmlDataExtractor {
         this.loadConfig();
     }
 
-    // ここ直す
     loadConfig() {
-        // htmlClass.json を読み込むか、デフォルト設定を使用
-        let configPath;
-        const possiblePaths = [
-            // 通常のNode.js環境（モジュール相対）
-            () => {
-                try {
-                    return path.join(path.dirname(new URL(import.meta.url).pathname), 'htmlClass.json');
-                } catch {
-                    return null;
-                }
-            },
-            // EXEと同じディレクトリから
-            () => path.join(path.dirname(process.execPath), 'src', 'html', 'htmlClass.json'),
-            // プロセスのカレントディレクトリから
-            () => path.join(process.cwd(), 'src', 'html', 'htmlClass.json'),
-        ];
-        
-        for (const pathFn of possiblePaths) {
-            try {
-                const testPath = pathFn();
-                if (testPath && fs.existsSync(testPath)) {
-                    configPath = testPath;
-                    if (process.platform === 'win32' && configPath.startsWith('\\')) {
-                        configPath = configPath.substring(1);
-                    }
-                    break;
-                }
-            } catch (e) {
-                // パスの取得に失敗した場合は次を試す
-            }
-        }
-        
-        try {
-            if (configPath && fs.existsSync(configPath)) {
-                const configData = fs.readFileSync(configPath, 'utf8');
-                this.config = JSON.parse(configData);
-            } else {
-                // ファイルが見つからない場合はコードに埋め込まれた設定を使用
-                this.config = htmlClass;
-            }
-            this.init();
-        } catch (err) {
-            console.error('設定ファイルの読み込み失敗:', err);
-            // フォールバック：コード内の設定を使用
-            this.config = htmlClass;
-            this.init();
-        }
+        // htmlClassを直接使用
+        this.config = htmlClass;
+        this.init();
     }
 
     init() {
