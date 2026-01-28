@@ -4,7 +4,7 @@
 
 [alice-check.exe](dist/alice-check.exe)をダウンロード
 
-適当なフォルダに入れる
+alice-check.exeを適当なフォルダに入れる
 
 同じ階層にhtmlフォルダ、excelフォルダを作る
 
@@ -27,7 +27,7 @@ htmlフォルダ保存したhtmlを全て入れる
 
 excelフォルダにexcel.txtを作る
 
-そこに本日分のデータの行を選択してそのままコピペする
+そこに本日分のデータの行を選択してそのままexcel.txtにコピペする
 
 ![](img/ex.png)
 

@@ -6,7 +6,7 @@ export default class Main {
     constructor(htmlFolderPath, excelFolderPath) {
         this.htmlFolderPath = htmlFolderPath;
         this.excelFolderPath = excelFolderPath;
-        
+
         return this.init();
     }
 
@@ -26,6 +26,11 @@ export default class Main {
         checker.setExcelData(excelData);
 
         const compareResults = checker.compare();
+        
+        // CSV出力
         await checker.writeResult(compareResults);
+
+        // TXT出力
+        await checker.writeTxtResult(compareResults);
     }
 }
