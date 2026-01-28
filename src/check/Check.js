@@ -6,6 +6,15 @@ function normalizeForCompare(s) {
     return s.replace(/\s+/g, ' ').trim();
 }
 
+function formatDate(dateStr) {
+    if (!dateStr) return '';
+    // ハイフンをスラッシュに変換
+    let formatted = dateStr.replace(/-/g, '/');
+    // 日付の2桁目に0がある場合それを消す（例：01/20 → 1/20）
+    formatted = formatted.replace(/\/0(\d)/g, '/$1');
+    return formatted;
+}
+
 export default class Checker {
     constructor(basePath) {
         this.basePath = basePath;
@@ -24,42 +33,56 @@ export default class Checker {
     compare() {
         const rows = [];
         const usedExcelIndexes = new Set();
+        const dateFields = ['注文日', '支払完了日', '注文確定日', '依頼日　　　(情報工房⇒ｼﾝｶﾞﾎﾟｰﾙﾌｧｯｼｮﾝ)', '発送日', '納品予定日'];
 
         // Excelデータを基準に比較
         this.excelData.forEach((excelRow, excelIdx) => {
             const excelOrderNo = excelRow['注文No.'];
             
             // 同じ注文No.のHTMLデータを検索
-            const htmlRow = this.htmlData.find(h => h['注文No.'] === excelOrderNo);
+            let htmlRow = this.htmlData.find(h => h['注文No.'] === excelOrderNo);
             
             if (htmlRow) {
                 usedExcelIndexes.add(excelIdx);
+                
+                // HTMLデータの日付をフォーマット
+                const formattedHtmlRow = { ...htmlRow };
+                dateFields.forEach(field => {
+                    if (formattedHtmlRow[field]) {
+                        formattedHtmlRow[field] = formatDate(formattedHtmlRow[field]);
+                    }
+                });
+                
+                // 発送日をハイフンからスラッシュに変更
+                if (formattedHtmlRow['発送日']) {
+                    formattedHtmlRow['発送日'] = formattedHtmlRow['発送日'].replace(/-/g, '/');
+                }
                 
                 // 品番、髪飾り種別、カラーをチェック
                 const productNumber = normalizeForCompare(excelRow['品番']);
                 const type = normalizeForCompare(excelRow['髪飾り種別']);
                 const color = normalizeForCompare(excelRow['カラー']);
-                const orderContent = normalizeForCompare(htmlRow['注文内容']);
+                const orderContent = normalizeForCompare(formattedHtmlRow['注文内容']);
                 
                 const productMatch = productNumber ? orderContent.includes(productNumber) : true;
                 const typeMatch = type ? orderContent.includes(type) : true;
                 const colorMatch = color ? orderContent.includes(color) : true;
                 const contentMatch = productMatch && typeMatch && colorMatch;
                 
-                // その他の項目も比較
-                const fields = ['注文No.', '金額', '合計金額', '支払種別'];
+                // すべての項目を比較
                 const compareResults = {};
+                const allKeys = new Set([...Object.keys(excelRow), ...Object.keys(formattedHtmlRow)]);
                 
-                for (const field of fields) {
-                    const excelVal = normalizeForCompare(excelRow[field]);
-                    const htmlVal = normalizeForCompare(htmlRow[field]);
+                for (const field of allKeys) {
+                    const excelVal = normalizeForCompare(excelRow[field] || '');
+                    const htmlVal = normalizeForCompare(formattedHtmlRow[field] || '');
                     compareResults[field] = excelVal === htmlVal;
                 }
                 
                 rows.push({
                     orderNo: excelOrderNo,
                     excelData: excelRow,
-                    htmlData: htmlRow,
+                    htmlData: formattedHtmlRow,
                     productMatch,
                     typeMatch,
                     colorMatch,

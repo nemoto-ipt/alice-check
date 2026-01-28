@@ -139,13 +139,13 @@ export default class HtmlDataExtractor {
         // 送付先住所から郵便番号を抽出して削除
         if (result['送付先住所']) {
             const addressText = result['送付先住所'];
-            const zipMatch = addressText.match(/〒?([\d\-]+)/);
+            const zipMatch = addressText.match(/〒?[\d\-]+/);
             
             if (zipMatch) {
                 // 郵便番号を抽出（〒記号は除外）
-                result['郵便番号'] = zipMatch[1];
-                // 送付先住所から郵便番号を削除
-                result['送付先住所'] = addressText.replace(/〒?[\d\-]+\s*/g, '').trim();
+                result['郵便番号'] = zipMatch[0].replace(/〒/, '');
+                // 送付先住所から郵便番号を削除（先頭の郵便番号部分のみを削除）
+                result['送付先住所'] = addressText.replace(/^〒?[\d\-]+\s*/, '').trim();
             }
         }
 
