@@ -38,9 +38,14 @@ export default class ExcelReader {
                 results.push(result);
             });
 
-            console.log(JSON.stringify(results, null, 2));
+            return results;
         } catch (err) {
             console.error('データ抽出失敗:', err.message);
+            return [];
         }
+    }
+
+    getResults() {
+        return this.init();
     }
 }

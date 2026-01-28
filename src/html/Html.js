@@ -31,15 +31,19 @@ export default class HtmlDataExtractor {
         const filePaths = this.getHtmlFilePaths();
         if (filePaths.length === 0) {
             console.log('❌ 対象のHTMLファイルが見つかりませんでした。');
-            return;
+            return [];
         }
 
         filePaths.forEach(filePath => {
             const data = this.extractData(filePath);
-            this.results.push({ fileName: path.basename(filePath), ...data });
+            this.results.push(data);
         });
 
-        this.displayResults();
+        return this.results;
+    }
+
+    getResults() {
+        return this.results;
     }
 
     getHtmlFilePaths() {
@@ -148,14 +152,6 @@ export default class HtmlDataExtractor {
         return result;
     }
 
-    displayResults() {
-        // fileNameを除外して出力
-        const resultsWithoutFileName = this.results.map(item => {
-            const { fileName, ...rest } = item;
-            return rest;
-        });
-        console.log(JSON.stringify(resultsWithoutFileName, null, 2));
-    }
 }
 
 
