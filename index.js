@@ -2,14 +2,22 @@ import Main from './src/Main.js';
 import path from 'path';
 import process from 'node:process'
 import readline from 'readline';
+import { fileURLToPath } from 'url';
 
-// HTMLフォルダパスとExcelフォルダパスを取得
-const htmlFolderArg = './html';
-const excelFolderArg = './excel';
+// EXEディレクトリを特定
+let exeDir;
+try {
+    // 通常のNode.js実行環境
+    const __filename = fileURLToPath(import.meta.url);
+    exeDir = path.dirname(__filename);
+} catch {
+    // SEA/EXE環境
+    exeDir = path.dirname(process.execPath);
+}
 
-// 絶対パスに変換
-const htmlFolderPath = path.resolve(htmlFolderArg);
-const excelFolderPath = path.resolve(excelFolderArg);
+// EXEディレクトリを基準にhtml/excelフォルダを指定
+const htmlFolderPath = path.join(exeDir, 'html');
+const excelFolderPath = path.join(exeDir, 'excel');
 
 async function run() {
     try {
