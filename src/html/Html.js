@@ -3,13 +3,28 @@ import path from 'path';
 import * as cheerio from 'cheerio';
 
 export default class HtmlDataExtractor {
-    constructor(folderPath, config) {
-        // 渡されたパスが絶対パスかどうかを判定して処理
+    constructor(folderPath) {
+        // 渡されたパスが絶寸パスかどうかを判定して処理
         this.targetDir = path.isAbsolute(folderPath) ? folderPath : path.resolve(folderPath);
 
-        this.config = config;
+        this.config = null;
         this.results = [];
-        this.init();
+        this.loadConfig();
+    }
+
+    // ここ直す
+    loadConfig() {
+        // htmlClass.json を読み込む
+        const configPath = path.join(path.dirname(new URL(import.meta.url).pathname), 'htmlClass.json');
+        const fixedPath = process.platform === 'win32' ? configPath.substring(1) : configPath;
+        
+        try {
+            const configData = fs.readFileSync(fixedPath, 'utf8');
+            this.config = JSON.parse(configData);
+            this.init();
+        } catch (err) {
+            console.error('設定ファイルの読み込み失敗:', err);
+        }
     }
 
     init() {
