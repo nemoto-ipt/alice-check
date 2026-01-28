@@ -3,7 +3,7 @@ import path from 'path';
 
 // SEA対応：コマンドライン引数でデータフォルダパスとタイプを取得
 const htmlFolderArg = process.argv[2] || './html';
-const excelFolderArg = process.argv[2] || './excel'; // 'html' または 'excel'
+const excelFolderArg = process.argv[2] || './excel';
 
 // 絶対パスに変換
 const htmlFolderPath = path.resolve(htmlFolderArg);

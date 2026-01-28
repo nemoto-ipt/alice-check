@@ -28,9 +28,12 @@ export default class ExcelReader {
                 if (!line.trim()) return;
                 
                 const values = line.split('\t');
+                // 最初の要素（行番号）を無視して2番目から処理
+                const dataValues = values.slice(1);
+                
                 const result = {};
                 keys.forEach((key, index) => {
-                    result[key] = values[index] || '';
+                    result[key] = dataValues[index] || '';
                 });
                 results.push(result);
             });
