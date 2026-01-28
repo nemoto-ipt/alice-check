@@ -10,7 +10,7 @@ export default class Main {
     }
 
     init() {
-        // new HtmlDataExtractor(this.htmlFolderPath);
+        new HtmlDataExtractor(this.htmlFolderPath);
         new ExcelReader(this.excelFolderPath);
     }
 
