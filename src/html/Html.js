@@ -81,7 +81,7 @@ export default class HtmlDataExtractor {
                 const endValue = endElement.val() || '';
                 
                 if (startValue && endValue) {
-                    result[key] = `${startValue}:00~${endValue}:00`;
+                    result[key] = `${startValue}:00-${endValue}:00`;
                 } else {
                     result[key] = '';
                 }
