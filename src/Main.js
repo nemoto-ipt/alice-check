@@ -1,7 +1,6 @@
 import HtmlDataExtractor from './html/Html.js';
 import ExcelReader from './excel/Excel.js';
 import Checker from './check/Check.js';
-import path from 'path';
 
 export default class Main {
     constructor(htmlFolderPath, excelFolderPath) {

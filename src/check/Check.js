@@ -115,52 +115,60 @@ export default class Checker {
         for (const row of rows) {
             const orderNo = row.orderNo || 'unknown';
             const sanitizedOrderNo = orderNo.replace(/[\\/:*?"<>|]/g, '_');
-            const outPath = path.join(outDir, `${sanitizedOrderNo}.txt`);
+            const outPath = path.join(outDir, `${sanitizedOrderNo}.csv`);
             
-            const lines = [];
-            lines.push(`注文No.: ${orderNo}`);
-            lines.push('='.repeat(60));
-            lines.push('');
-            
-            // Excel データ
+            // すべてのキーを集める
+            const allKeys = new Set();
             if (row.excelData) {
-                lines.push('[Excel データ]');
-                for (const [key, value] of Object.entries(row.excelData)) {
-                    lines.push(`${key}: ${value}`);
-                }
-            } else {
-                lines.push('[Excel データ] なし');
+                Object.keys(row.excelData).forEach(k => allKeys.add(k));
             }
-            
-            lines.push('');
-            lines.push('-'.repeat(60));
-            lines.push('');
-            
-            // HTML データ
             if (row.htmlData) {
-                lines.push('[HTML データ]');
-                for (const [key, value] of Object.entries(row.htmlData)) {
-                    lines.push(`${key}: ${value}`);
+                Object.keys(row.htmlData).forEach(k => allKeys.add(k));
+            }
+            
+            const sortedKeys = Array.from(allKeys);
+            
+            // CSV行を生成
+            const lines = [];
+            
+            // ヘッダー行
+            const headerRow = ['データソース', ...sortedKeys];
+            lines.push(this.escapeCSV(headerRow));
+            
+            // Excelデータ行
+            if (row.excelData) {
+                const excelRow = ['[Excel データ]'];
+                sortedKeys.forEach(key => {
+                    excelRow.push(row.excelData[key] || '');
+                });
+                lines.push(this.escapeCSV(excelRow));
+            }
+            
+            // HTMLデータ行
+            if (row.htmlData) {
+                const htmlRow = ['[HTML データ]'];
+                sortedKeys.forEach(key => {
+                    htmlRow.push(row.htmlData[key] || '');
+                });
+                lines.push(this.escapeCSV(htmlRow));
+            }
+            
+            // 比較結果行
+            const compareRow = ['比較結果'];
+            sortedKeys.forEach(key => {
+                if (key === '品番') {
+                    compareRow.push(row.productMatch ? '○' : '×');
+                } else if (key === '髪飾り種別') {
+                    compareRow.push(row.typeMatch ? '○' : '×');
+                } else if (key === 'カラー') {
+                    compareRow.push(row.colorMatch ? '○' : '×');
+                } else if (row.fieldMatches[key] !== undefined) {
+                    compareRow.push(row.fieldMatches[key] ? '○' : '×');
+                } else {
+                    compareRow.push('');
                 }
-            } else {
-                lines.push('[HTML データ] なし');
-            }
-            
-            lines.push('');
-            lines.push('-'.repeat(60));
-            lines.push('');
-            
-            // 比較結果
-            lines.push('[比較結果]');
-            lines.push(`品番マッチ: ${row.productMatch ? '○' : '×'}`);
-            lines.push(`髪飾り種別マッチ: ${row.typeMatch ? '○' : '×'}`);
-            lines.push(`カラーマッチ: ${row.colorMatch ? '○' : '×'}`);
-            lines.push(`注文内容総合判定: ${row.contentMatch ? '○' : '×'}`);
-            lines.push('');
-            
-            for (const [field, match] of Object.entries(row.fieldMatches)) {
-                lines.push(`${field}: ${match ? '○' : '×'}`);
-            }
+            });
+            lines.push(this.escapeCSV(compareRow));
             
             await fs.writeFile(outPath, lines.join('\n'), 'utf8');
             filePathList.push(outPath);
@@ -169,5 +177,16 @@ export default class Checker {
         console.log(`✅ ${filePathList.length}個の比較結果ファイルを保存しました`);
         filePathList.forEach(p => console.log(`  - ${p}`));
         return filePathList;
+    }
+
+    escapeCSV(row) {
+        return row.map(cell => {
+            const str = String(cell || '');
+            // カンマ、改行、ダブルクォートを含む場合はダブルクォートで囲む
+            if (str.includes(',') || str.includes('\n') || str.includes('"')) {
+                return `"${str.replace(/"/g, '""')}"`;
+            }
+            return str;
+        }).join(',');
     }
 }
