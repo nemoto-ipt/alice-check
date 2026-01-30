@@ -236,6 +236,19 @@ export default class Checker {
         }).join(',');
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+    
     async writeTxtResult(rows) {
         const outDir = path.join(this.basePath, 'result');
         try {
