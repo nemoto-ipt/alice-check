@@ -127,6 +127,13 @@ export default class HtmlDataExtractor {
             }
         });
 
+        result = this.dataFormat(result);
+
+        return result;
+    }
+
+    dataFormat(result) {
+
         // 注文日時を注文日と注文時間に分割
         if (result['注文日時']) {
             const parts = result['注文日時'].split(' ');
