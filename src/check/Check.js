@@ -39,13 +39,13 @@ export default class Checker {
         // Excelデータを基準に比較
         this.excelData.forEach((excelRow, excelIdx) => {
             const excelOrderNo = excelRow['注文No.'];
-            
+
             // 同じ注文No.のHTMLデータを検索
             let htmlRow = this.htmlData.find(h => h['注文No.'] === excelOrderNo);
-            
+
             if (htmlRow) {
                 usedExcelIndexes.add(excelIdx);
-                
+
                 // HTMLデータの日付をフォーマット
                 const formattedHtmlRow = { ...htmlRow };
                 dateFields.forEach(field => {
@@ -53,33 +53,33 @@ export default class Checker {
                         formattedHtmlRow[field] = formatDate(formattedHtmlRow[field]);
                     }
                 });
-                
+
                 // 発送日をハイフンからスラッシュに変更
                 if (formattedHtmlRow['発送日']) {
                     formattedHtmlRow['発送日'] = formattedHtmlRow['発送日'].replace(/-/g, '/');
                 }
-                
+
                 // 品番、髪飾り種別、カラーをチェック
                 const productNumber = normalizeForCompare(excelRow['品番']);
                 const type = normalizeForCompare(excelRow['髪飾り種別']);
                 const color = normalizeForCompare(excelRow['カラー']);
                 const orderContent = normalizeForCompare(formattedHtmlRow['注文内容']);
-                
+
                 const productMatch = productNumber ? orderContent.includes(productNumber) : true;
                 const typeMatch = type ? orderContent.includes(type) : true;
                 const colorMatch = color ? orderContent.includes(color) : true;
                 const contentMatch = productMatch && typeMatch && colorMatch;
-                
+
                 // すべての項目を比較
                 const compareResults = {};
                 const allKeys = new Set([...Object.keys(excelRow), ...Object.keys(formattedHtmlRow)]);
-                
+
                 for (const field of allKeys) {
                     const excelVal = normalizeForCompare(excelRow[field] || '');
                     const htmlVal = normalizeForCompare(formattedHtmlRow[field] || '');
                     compareResults[field] = excelVal === htmlVal;
                 }
-                
+
                 rows.push({
                     orderNo: excelOrderNo,
                     excelData: excelRow,
@@ -109,7 +109,7 @@ export default class Checker {
         this.htmlData.forEach(htmlRow => {
             const htmlOrderNo = htmlRow['注文No.'];
             const exists = this.excelData.some((e, idx) => e['注文No.'] === htmlOrderNo && usedExcelIndexes.has(idx));
-            
+
             if (!exists) {
                 rows.push({
                     orderNo: htmlOrderNo,
@@ -136,12 +136,12 @@ export default class Checker {
 
         // 注文No.ごとにファイルを作成
         const filePathList = [];
-        
+
         for (const row of rows) {
             const orderNo = row.orderNo || 'unknown';
             const sanitizedOrderNo = orderNo.replace(/[\\/:*?"<>|]/g, '_');
             const outPath = path.join(outDir, `${sanitizedOrderNo}.csv`);
-            
+
             // すべてのキーを集める
             const allKeys = new Set();
             if (row.excelData) {
@@ -150,7 +150,7 @@ export default class Checker {
             if (row.htmlData) {
                 Object.keys(row.htmlData).forEach(k => allKeys.add(k));
             }
-            
+
             // キーの順序を定義（注文内容をお客様名と品番の間に配置）
             const keyOrder = [
                 '注文No.', '注文日', '注文時間', 'お客様名', '注文内容', '品番', '髪飾り種別', 'カラー',
@@ -159,7 +159,7 @@ export default class Checker {
                 '発送元', '発送日', '納品予定日', 'お荷物伝票番号', '郵便番号', '送付先住所',
                 '送付先宛名', '電話番号', 'キャンセル', '備考', 'ひとことメモ'
             ];
-            
+
             const sortedKeys = keyOrder.filter(k => allKeys.has(k));
             // 定義にないキーを末尾に追加
             for (const k of allKeys) {
@@ -167,14 +167,14 @@ export default class Checker {
                     sortedKeys.push(k);
                 }
             }
-            
+
             // CSV行を生成
             const lines = [];
-            
+
             // ヘッダー行
             const headerRow = ['データソース', ...sortedKeys];
             lines.push(this.escapeCSV(headerRow));
-            
+
             // Excelデータ行
             if (row.excelData) {
                 const excelRow = ['[Excel データ]'];
@@ -192,7 +192,7 @@ export default class Checker {
                 });
                 lines.push(this.escapeCSV(excelRow));
             }
-            
+
             // HTMLデータ行
             if (row.htmlData) {
                 const htmlRow = ['[HTML データ]'];
@@ -201,11 +201,13 @@ export default class Checker {
                 });
                 lines.push(this.escapeCSV(htmlRow));
             }
-            
+
             // 比較結果行
             const compareRow = ['比較結果'];
             sortedKeys.forEach(key => {
-                if (key === '注文内容') {
+                if (key === '品番' || key === '髪飾り種別' || key === 'カラー' || key === '発送元' || key === '備考' || key === 'ひとことメモ') {
+                    compareRow.push('-')
+                } else if (key === '注文内容' || key === '支払種別') {
                     // 品番、髪飾り種別、カラーが全て注文内容に含まれているかチェック
                     compareRow.push(row.contentMatch ? '○' : '×');
                 } else if (row.fieldMatches[key] !== undefined) {
@@ -215,7 +217,7 @@ export default class Checker {
                 }
             });
             lines.push(this.escapeCSV(compareRow));
-            
+
             await fs.writeFile(outPath, lines.join('\n'), 'utf8');
             filePathList.push(outPath);
         }
@@ -248,7 +250,7 @@ export default class Checker {
 
 
 
-    
+
     async writeTxtResult(rows) {
         const outDir = path.join(this.basePath, 'result');
         try {
@@ -300,9 +302,9 @@ export default class Checker {
 
             // ヘッダー行
             const header = 'フィールド'.padEnd(fieldWidth) +
-                           'Excel'.padEnd(dataWidth) +
-                           'HTML'.padEnd(dataWidth) +
-                           '比較';
+                'Excel'.padEnd(dataWidth) +
+                'HTML'.padEnd(dataWidth) +
+                '比較';
             lines.push(header);
             lines.push('─'.repeat(fieldWidth + dataWidth + dataWidth + compareWidth));
 

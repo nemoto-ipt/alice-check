@@ -127,7 +127,7 @@ export default class HtmlDataExtractor {
             }
         });
 
-        result = this.dataFormat(result);
+        this.dataFormat(result);
 
         return result;
     }
