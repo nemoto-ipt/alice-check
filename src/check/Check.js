@@ -186,6 +186,7 @@ export default class Checker {
             const compareRow = ['比較結果'];
             sortedKeys.forEach(key => {
                 if (key === '品番' || key === '髪飾り種別' || key === 'カラー' || key === '発送元' || key === '備考' || key === 'ひとことメモ') {
+                    // チェックしない
                     compareRow.push('-')
                 } else if (key === '注文内容' || key === '支払種別') {
                     // 品番、髪飾り種別、カラーが全て注文内容に含まれているかチェック
