@@ -6,14 +6,6 @@ function normalizeForCompare(s) {
     return s.replace(/\s+/g, ' ').trim();
 }
 
-function formatDate(dateStr) {
-    if (!dateStr) return '';
-    // ハイフンをスラッシュに変換
-    let formatted = dateStr.replace(/-/g, '/');
-    // 日付の2桁目に0がある場合それを消す（例：01/20 → 1/20）
-    formatted = formatted.replace(/\/0(\d)/g, '/$1');
-    return formatted;
-}
 
 export default class Checker {
     constructor(basePath) {
@@ -45,19 +37,7 @@ export default class Checker {
 
             if (htmlRow) {
                 usedExcelIndexes.add(excelIdx);
-
-                // HTMLデータの日付をフォーマット
                 const formattedHtmlRow = { ...htmlRow };
-                dateFields.forEach(field => {
-                    if (formattedHtmlRow[field]) {
-                        formattedHtmlRow[field] = formatDate(formattedHtmlRow[field]);
-                    }
-                });
-
-                // 発送日をハイフンからスラッシュに変更
-                if (formattedHtmlRow['発送日']) {
-                    formattedHtmlRow['発送日'] = formattedHtmlRow['発送日'].replace(/-/g, '/');
-                }
 
                 // 品番、髪飾り種別、カラーをチェック
                 const productNumber = normalizeForCompare(excelRow['品番']);
@@ -127,7 +107,7 @@ export default class Checker {
         return rows;
     }
 
-    // TODO: ここ直す
+    // TODO: ここ直す　Keyまとめて管理したい
     async writeResult(rows) {
         const outDir = path.join(this.basePath, 'result');
         try {

@@ -31,6 +31,6 @@ export default class Main {
         await checker.writeResult(compareResults);
 
         // TXT出力
-        await checker.writeTxtResult(compareResults);
+        // await checker.writeTxtResult(compareResults);
     }
 }

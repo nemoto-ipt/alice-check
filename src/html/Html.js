@@ -177,6 +177,21 @@ export default class HtmlDataExtractor {
             }
         });
 
+        // 日付文字列のフォーマットを統一（ハイフン→スラッシュ、/0X の先頭ゼロ削除）
+        const normalizeDate = (v) => {
+            if (!v) return v;
+            let s = String(v).replace(/-/g, '/');
+            s = s.replace(/\/0(\d)/g, '/$1');
+            return s;
+        };
+
+        const fieldsToFormat = ['注文日', '支払完了日', '注文確定日', '依頼日　　　(情報工房⇒ｼﾝｶﾞﾎﾟｰﾙﾌｧｯｼｮﾝ)', '発送日', '納品予定日'];
+        fieldsToFormat.forEach(f => {
+            if (result[f]) {
+                result[f] = normalizeDate(result[f]);
+            }
+        });
+
         // 値がある場合はそのまま、ない（空などの）場合は '-' を代入
         result['配送日指定'] = result['配送日指定'] ? result['配送日指定'] : '-';
 
