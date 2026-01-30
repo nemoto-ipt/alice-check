@@ -195,6 +195,9 @@ export default class HtmlDataExtractor {
         // 値がある場合はそのまま、ない（空などの）場合は '-' を代入
         result['配送日指定'] = result['配送日指定'] ? result['配送日指定'] : '-';
 
+        result['時間指定'] = result['時間指定'] ? result['時間指定'] : '指定なし';
+
+
         // 置き配指定から「置き配場所：」を削除
         if (result['置き配指定']) {
             result['置き配指定'] = result['置き配指定'].replace(/置き配場所[：:]/g, '').trim();
