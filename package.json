@@ -8,6 +8,7 @@
   "main": "index.js",
   "scripts": {
     "build": "npm-run-all build:*",
+    "build:distdel": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\"",
     "build:bundle": "esbuild index.js --outfile=dist/index.cjs --bundle --platform=node --format=cjs --minify",
     "build:blob": "node --experimental-sea-config sea-config.json",
     "build:exe": "node -e \"fs.copyFileSync(process.execPath, 'dist/alice-check.exe')\"",
